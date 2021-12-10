@@ -33,92 +33,111 @@ let primeiraOperacao = '';
 let segundaOperacao = '';
 
 //O flag geral que vai dizer se quem está sendo escrito é o primeiro ou o segundo termo
-let flagGeral = 0;
+let flagGeral = false;
 //O flag do primeiro/segundo termo vai dizer se quem está sendo escrito é a parte inteira ou fracionária do 
-let flagPrimeiroTermo = 0;
-let flagSegundoTermo = 0;
+let flagPrimeiroTermo = true;
+let flagSegundoTermo = false;
 
 let resultado = 0;
 
-mostrarTermo(0);
+let savedState = [];
+let actualState = [];
+let memoryOperator;
 
-function mostrarTermo(valor) {
+displayResult(0);
+
+function displayResult(valor) {
     const msg = document.querySelector('.resultadoNoVisor');
     msg.textContent = valor;
 }
 
-function receberTermo (termo) {
-    if (flagGeral === 0) {
-        if (termo === ',' && flagPrimeiroTermo === 0) {
-            if (primeiroArrayInteiro.length === 0) {
-                primeiroArrayInteiro.push(0);
-            }
-            primeiroArrayInteiro.push('.');
-            flagPrimeiroTermo = 1;
-        } else if ((termo != '+' || termo != '-' || termo != '/' || termo != '*' || termo != '=') && flagPrimeiroTermo === 0) {
-            primeiroArrayInteiro.push(termo);
-        } else if ((termo != '+' || termo != '-' || termo != '/' || termo != '*' || termo  != '=') && flagPrimeiroTermo === 1) {
-            primeiroArrayFracionario.push(termo);
-        } else if (termo === '+' || termo === '-' || termo === '/' || termo === '*'){
-            flagGeral = 1;
+function receberTermo2 (termo) {
+    if (typeof Number(termo) === 'number') {
+        actualState.push(termo);
+        displayResult(actualState);
+    } else if (termo === ',') {
+        if (!actualState.includes('.')) {
+            actualState.push('.');
         }
-
-        primeiroFator = primeiroArrayInteiro.concat(primeiroArrayFracionario).join('');
-        primeiroFatorNumerico = Number(primeiroFator.toString());
-        mostrarTermo(primeiroFatorNumerico);
-
-    } else if (flagGeral === 1) {
-        if (termo === ',' && flagSegundoTermo === 0) {
-            if (segundoArrayInteiro.length === 0) {
-                segundoArrayInteiro.push(0);
-            }
-            segundoArrayInteiro.push('.');
-            flagSegundoTermo = 1;
-        } else if (!isNaN(termo) && flagSegundoTermo === 0) {
-            segundoArrayInteiro.push(termo);
-        } else if (!isNaN(termo) && flagSegundoTermo === 1) {
-            segundoArrayFracionario.push(termo);
-        } else if (termo === '=') {
-            executarOperacao(primeiraOperacao);
-            limparPrimeiroTermo();
-            limparSegundoTermo();
-            primeiroFatorNumerico = resultado;
-            mostrarTermo(resultado);
-            return;
+    } else if (termo === '+' || termo === '-' || termo === '/' || termo === '*') {
+        if (memoryOperator) {
+            const result = executarOperacao(memoryOperator);
+            memoryOperator = termo;
+            displayResult(result);
+        } else {
+            savedState = actualState;
+            memoryOperator = termo;
+            actualState = [];
         }
-        segundoFator = segundoArrayInteiro.concat(segundoArrayFracionario).join('');
-        segundoFatorNumerico = Number(segundoFator.toString());
-        mostrarTermo(segundoFatorNumerico);
-
-    }     
-}
-
-function executarOperacao(operacao) {
-    if (operacao === 'soma') {
-        resultado = primeiroFatorNumerico + segundoFatorNumerico;
-    } else if (operacao === 'subtracao') {
-        resultado = primeiroFatorNumerico - segundoFatorNumerico;
-    } else if (operacao === 'divisao') {
-        resultado = primeiroFatorNumerico / segundoFatorNumerico;
-    } else if (operacao === 'multiplicacao') {
-        resultado = primeiroFatorNumerico * segundoFatorNumerico;
+    } else if (termo === '=') {
+        const result = executarOperacao(memoryOperator);
+        displayResult(result);
+        memoryOperator = null;
     }
 }
 
-function limparPrimeiroTermo() {
-    termo = 0;
+// function receberTermo (termo) {
+//     if (!flagGeral) {
+//         if (termo === ',' && primeiroArrayInteiro.length === 0) {
+//             primeiroArrayInteiro.push(0);
+//             primeiroArrayInteiro.push('.');
+//             flagPrimeiroTermo = 1;
+//         } else if (termo === ',' && primeiroArrayInteiro.length > 0) {
+//             primeiroArrayFracionario.push('.');
+//             flagPrimeiroTermo = 1;
+//         }
+//         if ((termo != '+' || termo != '-' || termo != '/' || termo != '*' || termo != '=') && flagPrimeiroTermo === 0) {
+//             primeiroArrayInteiro.push(termo);
+//         } else if ((termo != '+' || termo != '-' || termo != '/' || termo != '*' || termo  != '=') && flagPrimeiroTermo === 1) {
+//             primeiroArrayFracionario.push(termo);
+//         } else if (termo === '+' || termo === '-' || termo === '/' || termo === '*'){
+//             flagGeral = 1;
+//         }
 
-    primeiroArrayInteiro = [];
-    primeiroArrayFracionario = [];
-    primeiroFator = [];
-    primeiroFatorNumerico = 0;
+//         primeiroFator = primeiroArrayInteiro.concat(primeiroArrayFracionario).join('');
+//         primeiroFatorNumerico = Number(primeiroFator.toString());
+//         mostrarTermo(primeiroFatorNumerico);
+
+//     } else if (flagGeral === 1) {
+//         if (termo === ',' && flagSegundoTermo === 0) {
+//             if (segundoArrayInteiro.length === 0) {
+//                 segundoArrayInteiro.push(0);
+//             }
+//             segundoArrayInteiro.push('.');
+//             flagSegundoTermo = 1;
+//         } else if (!isNaN(termo) && flagSegundoTermo === 0) {
+//             segundoArrayInteiro.push(termo);
+//         } else if (!isNaN(termo) && flagSegundoTermo === 1) {
+//             segundoArrayFracionario.push(termo);
+//         } else if (termo === '=') {
+//             executarOperacao(primeiraOperacao);
+//             limparPrimeiroTermo();
+//             limparSegundoTermo();
+//             primeiroFatorNumerico = resultado;
+//             mostrarTermo(resultado);
+//             return;
+//         }
+//         segundoFator = segundoArrayInteiro.concat(segundoArrayFracionario).join('');
+//         segundoFatorNumerico = Number(segundoFator.toString());
+//         mostrarTermo(segundoFatorNumerico);
+
+//     }     
+// }
+
+function executarOperacao(operacao) {
+    if (operacao === '+') {
+        return convertToNumber(actualState) + convertToNumber(savedState);
+    } else if (operacao === '-') {
+        return convertToNumber(actualState) - convertToNumber(savedState);
+    } else if (operacao === '/') {
+        return convertToNumber(actualState) / convertToNumber(savedState);
+    } else {
+        return convertToNumber(actualState) * convertToNumber(savedState);
+    }
 }
 
-function limparSegundoTermo() {
-    segundoArrayInteiro = [];
-    segundoArrayFracionario = [];
-    segundoFator = [];
-    segundoFatorNumerico = 0;
+function convertToNumber(array) {
+    return Number(array.join(''));
 }
 
 botao1.onclick = function() {
@@ -225,3 +244,4 @@ botaoIgual.onclick = function () {
     termo = '=';
     receberTermo(termo);
 }
+
