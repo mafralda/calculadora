@@ -1,61 +1,90 @@
-const arrayBotoes = ['C', ',', '=', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0'];
-const caixaBotoes = document.querySelector('.caixaBotoes');
+const buttonsArray = ['C', ',', '=', '/', '7', '8', '9', '*', '4', '5', '6', '-', '1', '2', '3', '+', '0'];
+const buttonBox = document.querySelector('.buttonBox');
 
 let savedState = [];
 let actualState = [];
 let memoryOperator;
 
-arrayBotoes.map(buttonTextContent => {
+buttonsArray.map(buttonTextContent => {
     const newButton = document.createElement('button');
     newButton.textContent = buttonTextContent;
-    newButton.onclick = receberTermo(buttonTextContent);
-    caixaBotoes.appendChild(newButton);    
+    newButton.onclick = () => receiveButtonContent(buttonTextContent);
+    buttonBox.appendChild(newButton);    
 });
 
 displayResult(0);
 
 function displayResult(valor) {
-    const msg = document.querySelector('.resultadoNoVisor');
-    msg.textContent = valor;
+    const msg = document.querySelector('.calcDisplay');
+        msg.textContent = convertToNumber(valor);    
 }
 
-function receberTermo (termo) {
-    if (typeof Number(termo) === 'number') {
-        actualState.push(termo);
-        displayResult(actualState);
-    } else if (termo === ',') {
+function receiveButtonContent (textContent) {
+    if (!isNaN(textContent)) {
+        if (typeof actualState === 'object') {
+            actualState.push(textContent);
+            displayResult(actualState);
+        } else {
+            savedState = actualState;
+            actualState = [];
+            actualState.push(textContent);
+            displayResult(actualState);
+        }        
+    } else if (textContent === ',') {
         if (!actualState.includes('.')) {
             actualState.push('.');
         }
-    } else if (termo === '+' || termo === '-' || termo === '/' || termo === '*') {
+    } else if (textContent === '+' || textContent === '-' || textContent === '/' || textContent === '*') {
         if (memoryOperator) {
-            const result = executarOperacao(memoryOperator);
-            memoryOperator = termo;
+            let result = executeOperation(memoryOperator);
+            memoryOperator = textContent;
             displayResult(result);
+            actualState = [];
+            savedState = result;
         } else {
             savedState = actualState;
-            memoryOperator = termo;
+            memoryOperator = textContent;
             actualState = [];
         }
-    } else if (termo === '=') {
-        const result = executarOperacao(memoryOperator);
-        displayResult(result);
-        memoryOperator = null;
-    }
+    } else if (textContent === '=') {
+        let result = executeOperation(memoryOperator);
+                
+        if (!memoryOperator) {
+            result = actualState;
+        } else {
+            displayResult(result);
+            memoryOperator = null;
+        }
+        actualState = result;        
+    } else if (textContent = 'C') {
+        cleanAll ();
+    }    
 }
 
-function executarOperacao(operacao) {
-    if (operacao === '+') {
-        return convertToNumber(actualState) + convertToNumber(savedState);
-    } else if (operacao === '-') {
-        return convertToNumber(actualState) - convertToNumber(savedState);
-    } else if (operacao === '/') {
-        return convertToNumber(actualState) / convertToNumber(savedState);
+function executeOperation(operation) {
+    if (operation === '+') {
+        return convertToNumber(savedState) + convertToNumber(actualState);
+    } else if (operation === '-') {
+        return convertToNumber(savedState) - convertToNumber(actualState);
+    } else if (operation === '/') {
+        return convertToNumber(savedState) / convertToNumber(actualState);
     } else {
-        return convertToNumber(actualState) * convertToNumber(savedState);
+        return convertToNumber(savedState) * convertToNumber(actualState);
     }
 }
 
-function convertToNumber(array) {
-    return Number(array.join(''));
+function convertToNumber(variable) {
+    if (typeof variable != 'number') {
+        return Number(variable.join(''));
+    }
+    else {
+        return variable;
+    }
+}
+
+function cleanAll () {
+    actualState = [];
+    savedState = [];
+    memoryOperator = undefined;
+    displayResult(0);
 }
